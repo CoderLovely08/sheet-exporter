@@ -5,9 +5,10 @@ const { v4: uuidv4 } = require('uuid');
 const fs = require('fs');
 const sheetService = require('./utils/sheet.service');
 const ejs = require('ejs');
+require('dotenv').config();
 
 const app = express();
-const port = 8000;
+const port = process.env.PORT || 8000;
 
 // In-memory store for session data
 const sessions = {};
