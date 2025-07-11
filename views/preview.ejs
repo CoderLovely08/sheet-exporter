@@ -1,0 +1,115 @@
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <div>
+            <h2 style="margin-bottom: 0.5rem;">File Preview</h2>
+            <div class="file-info">
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h8l4 4v10a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/>
+                </svg>
+                <%= filename %>
+            </div>
+        </div>
+        <div style="text-align: right;">
+            <p style="margin: 0; color: #64748b; font-size: 0.875rem;">Total Rows</p>
+            <p style="margin: 0; font-size: 1.5rem; font-weight: 600; color: #1e293b;"><%= rows.length.toLocaleString() %></p>
+        </div>
+    </div>
+
+    <form action="/export/<%= id %>" method="post" id="exportForm">
+        <div style="margin-bottom: 2rem;">
+            <h3 style="font-size: 1.125rem; margin-bottom: 1rem;">Select Columns to Export</h3>
+            <div class="select-controls">
+                <button type="button" class="select-btn" onclick="selectAll()">Select All</button>
+                <button type="button" class="select-btn" onclick="selectNone()">Select None</button>
+            </div>
+            <div class="checkbox-group">
+                <% columns.forEach(c => { %>
+                    <div class="checkbox-item">
+                        <input type="checkbox" name="cols" value="<%= c %>" id="col_<%= c %>" checked>
+                        <label for="col_<%= c %>"><%= c %></label>
+                    </div>
+                <% }) %>
+            </div>
+        </div>
+
+        <div class="button-group" style="margin-bottom: 2rem;">
+            <button type="submit" class="btn btn-secondary" style="font-size: 1.125rem; padding: 1rem 2rem;">
+                Export Selected Columns
+            </button>
+            <a href="/" class="btn btn-primary" style="font-size: 1.125rem; padding: 1rem 2rem;">
+                Start Over
+            </a>
+        </div>
+    </form>
+</div>
+
+<div class="card">
+    <h3 style="margin-bottom: 1.5rem;">Data Preview</h3>
+    
+    <div class="table-container">
+        <table>
+            <caption>First 10 rows</caption>
+            <thead>
+                <tr>
+                    <% columns.forEach(c => { %>
+                        <th><%= c %></th>
+                    <% }) %>
+                </tr>
+            </thead>
+            <tbody>
+                <% previewHead.forEach((row, idx) => { %>
+                    <tr>
+                        <% columns.forEach(c => { %>
+                            <td><%= row[c] !== null && row[c] !== undefined ? row[c] : '' %></td>
+                        <% }) %>
+                    </tr>
+                <% }) %>
+            </tbody>
+        </table>
+    </div>
+
+    <% if (previewTail && previewTail.length > 0) { %>
+        <div class="table-container">
+            <table>
+                <caption>Last 10 rows</caption>
+                <thead>
+                    <tr>
+                        <% columns.forEach(c => { %>
+                            <th><%= c %></th>
+                        <% }) %>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% previewTail.forEach((row, idx) => { %>
+                        <tr>
+                            <% columns.forEach(c => { %>
+                                <td><%= row[c] !== null && row[c] !== undefined ? row[c] : '' %></td>
+                            <% }) %>
+                        </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        </div>
+    <% } %>
+</div>
+
+<script>
+function selectAll() {
+    document.querySelectorAll('input[name="cols"]').forEach(cb => cb.checked = true);
+    updateSelectedCount();
+}
+
+function selectNone() {
+    document.querySelectorAll('input[name="cols"]').forEach(cb => cb.checked = false);
+    updateSelectedCount();
+}
+
+function updateSelectedCount() {
+    const total = document.querySelectorAll('input[name="cols"]').length;
+    const selected = document.querySelectorAll('input[name="cols"]:checked').length;
+    const button = document.querySelector('#exportForm button[type="submit"]');
+    if (button) {
+        button.textContent = `Export ${selected} of ${total} Columns`;
+    }
+}
+</script>
