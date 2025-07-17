@@ -19,13 +19,16 @@
         <div style="margin-bottom: 2rem;">
             <h3 style="font-size: 1.125rem; margin-bottom: 1rem;">Select Columns to Export</h3>
             <div class="select-controls">
-                <button type="button" class="select-btn" onclick="selectAll()">Select All</button>
-                <button type="button" class="select-btn" onclick="selectNone()">Select None</button>
+                <button type="button" class="select-btn" onclick="selectAllColumns()">Select All</button>
+                <button type="button" class="select-btn" onclick="selectNoneColumns()">Select None</button>
+                <span style="margin-left: 1rem; color: #64748b;">
+                    <span id="selectedColsCount"><%= columns.length %></span> of <%= columns.length %> columns selected
+                </span>
             </div>
             <div class="checkbox-group">
                 <% columns.forEach(c => { %>
                     <div class="checkbox-item">
-                        <input type="checkbox" name="cols" value="<%= c %>" id="col_<%= c %>" checked>
+                        <input type="checkbox" name="cols" value="<%= c %>" id="col_<%= c %>" checked onchange="updateSelectionCounts()">
                         <label for="col_<%= c %>"><%= c %></label>
                     </div>
                 <% }) %>
@@ -34,7 +37,7 @@
 
         <div class="button-group" style="margin-bottom: 2rem;">
             <button type="submit" class="btn btn-secondary" style="font-size: 1.125rem; padding: 1rem 2rem;">
-                Export Selected Columns
+                Export Selected Data
             </button>
             <a href="/" class="btn btn-primary" style="font-size: 1.125rem; padding: 1rem 2rem;">
                 Start Over
@@ -44,21 +47,39 @@
 </div>
 
 <div class="card">
-    <h3 style="margin-bottom: 1.5rem;">Data Preview</h3>
+    <h3 style="margin-bottom: 1.5rem;">Full Data Sheet</h3>
     
-    <div class="table-container">
-        <table>
-            <caption>First 10 rows</caption>
-            <thead>
+    <div style="margin-bottom: 1rem;">
+        <h4 style="font-size: 1rem; margin-bottom: 0.5rem;">Select Rows</h4>
+        <div class="select-controls">
+            <button type="button" class="select-btn" onclick="selectAllRows()">Select All Rows</button>
+            <button type="button" class="select-btn" onclick="selectNoneRows()">Select None</button>
+            <span style="margin-left: 1rem; color: #64748b;">
+                <span id="selectedRowsCount"><%= rows.length %></span> of <%= rows.length %> rows selected
+            </span>
+        </div>
+    </div>
+    
+    <div class="table-container" style="max-height: 600px; overflow: auto; border: 1px solid #e2e8f0; border-radius: 0.5rem;">
+        <table id="dataTable">
+            <thead style="position: sticky; top: 0; background-color: #f8fafc; z-index: 10;">
                 <tr>
+                    <th style="width: 50px; text-align: center;">
+                        <input type="checkbox" id="selectAllRowsCheckbox" checked onchange="toggleAllRows()">
+                    </th>
+                    <th style="width: 60px;">#</th>
                     <% columns.forEach(c => { %>
                         <th><%= c %></th>
                     <% }) %>
                 </tr>
             </thead>
             <tbody>
-                <% previewHead.forEach((row, idx) => { %>
+                <% rows.forEach((row, idx) => { %>
                     <tr>
+                        <td style="text-align: center;">
+                            <input type="checkbox" name="rows" value="<%= idx %>" form="exportForm" checked onchange="updateSelectionCounts()">
+                        </td>
+                        <td style="color: #64748b;"><%= idx + 1 %></td>
                         <% columns.forEach(c => { %>
                             <td><%= row[c] !== null && row[c] !== undefined ? row[c] : '' %></td>
                         <% }) %>
@@ -67,49 +88,58 @@
             </tbody>
         </table>
     </div>
-
-    <% if (previewTail && previewTail.length > 0) { %>
-        <div class="table-container">
-            <table>
-                <caption>Last 10 rows</caption>
-                <thead>
-                    <tr>
-                        <% columns.forEach(c => { %>
-                            <th><%= c %></th>
-                        <% }) %>
-                    </tr>
-                </thead>
-                <tbody>
-                    <% previewTail.forEach((row, idx) => { %>
-                        <tr>
-                            <% columns.forEach(c => { %>
-                                <td><%= row[c] !== null && row[c] !== undefined ? row[c] : '' %></td>
-                            <% }) %>
-                        </tr>
-                    <% }) %>
-                </tbody>
-            </table>
-        </div>
-    <% } %>
 </div>
 
 <script>
-function selectAll() {
+function selectAllColumns() {
     document.querySelectorAll('input[name="cols"]').forEach(cb => cb.checked = true);
-    updateSelectedCount();
+    updateSelectionCounts();
 }
 
-function selectNone() {
+function selectNoneColumns() {
     document.querySelectorAll('input[name="cols"]').forEach(cb => cb.checked = false);
-    updateSelectedCount();
+    updateSelectionCounts();
 }
 
-function updateSelectedCount() {
-    const total = document.querySelectorAll('input[name="cols"]').length;
-    const selected = document.querySelectorAll('input[name="cols"]:checked').length;
+function selectAllRows() {
+    document.querySelectorAll('input[name="rows"]').forEach(cb => cb.checked = true);
+    document.getElementById('selectAllRowsCheckbox').checked = true;
+    updateSelectionCounts();
+}
+
+function selectNoneRows() {
+    document.querySelectorAll('input[name="rows"]').forEach(cb => cb.checked = false);
+    document.getElementById('selectAllRowsCheckbox').checked = false;
+    updateSelectionCounts();
+}
+
+function toggleAllRows() {
+    const isChecked = document.getElementById('selectAllRowsCheckbox').checked;
+    document.querySelectorAll('input[name="rows"]').forEach(cb => cb.checked = isChecked);
+    updateSelectionCounts();
+}
+
+function updateSelectionCounts() {
+    // Update column count
+    const totalCols = document.querySelectorAll('input[name="cols"]').length;
+    const selectedCols = document.querySelectorAll('input[name="cols"]:checked').length;
+    document.getElementById('selectedColsCount').textContent = selectedCols;
+    
+    // Update row count
+    const totalRows = document.querySelectorAll('input[name="rows"]').length;
+    const selectedRows = document.querySelectorAll('input[name="rows"]:checked').length;
+    document.getElementById('selectedRowsCount').textContent = selectedRows;
+    
+    // Update export button text
     const button = document.querySelector('#exportForm button[type="submit"]');
     if (button) {
-        button.textContent = `Export ${selected} of ${total} Columns`;
+        button.textContent = `Export ${selectedRows} rows × ${selectedCols} columns`;
     }
+    
+    // Update select all checkbox state
+    document.getElementById('selectAllRowsCheckbox').checked = selectedRows === totalRows;
 }
+
+// Initialize counts on page load
+document.addEventListener('DOMContentLoaded', updateSelectionCounts);
 </script>

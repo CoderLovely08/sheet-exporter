@@ -214,6 +214,66 @@ tr:hover {
   background-color: #f8fafc;
 }
 
+/* Full data table specific styles */
+#dataTable {
+  table-layout: auto;
+  min-width: 100%;
+}
+
+#dataTable thead {
+  position: sticky;
+  top: 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+#dataTable th {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+#dataTable tbody tr {
+  transition: background-color 0.15s ease;
+}
+
+#dataTable tbody tr:hover {
+  background-color: #f0f4f8;
+}
+
+/* Row selection checkbox styles */
+#dataTable input[type="checkbox"] {
+  width: 1rem;
+  height: 1rem;
+  cursor: pointer;
+  accent-color: #3b82f6;
+}
+
+#dataTable td:first-child,
+#dataTable th:first-child {
+  text-align: center;
+  padding: 0.5rem;
+}
+
+/* Scrollbar styling for better UX */
+.table-container::-webkit-scrollbar {
+  height: 12px;
+  width: 12px;
+}
+
+.table-container::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 6px;
+}
+
+.table-container::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 6px;
+}
+
+.table-container::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
 /* Error styles */
 .error-container {
   text-align: center;

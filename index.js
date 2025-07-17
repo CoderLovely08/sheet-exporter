@@ -70,7 +70,7 @@ app.get('/preview/:id', (req, res) => {
 
 app.post('/export/:id', async (req, res) => {
     const { id } = req.params;
-    const { cols } = req.body;
+    const { cols, rows } = req.body;
     const sessionData = sessions[id];
 
     if (!sessionData) {
@@ -85,14 +85,26 @@ app.post('/export/:id', async (req, res) => {
         });
     }
 
+    if (!rows) {
+        return res.status(400).render('layout', { 
+            body: ejs.render(fs.readFileSync(path.join(__dirname, 'views', 'error.ejs'), 'utf-8'), { message: 'No rows selected.' })
+        });
+    }
+
     const selectedColumns = Array.isArray(cols) ? cols : [cols];
-    const filteredRows = sheetService.filterColumns(sessionData.rows, selectedColumns);
+    const selectedRowIndices = Array.isArray(rows) ? rows.map(r => parseInt(r)) : [parseInt(rows)];
+    
+    // Filter rows based on selected indices
+    const selectedRows = sessionData.rows.filter((row, index) => selectedRowIndices.includes(index));
+    
+    // Filter columns from the selected rows
+    const filteredRows = sheetService.filterColumns(selectedRows, selectedColumns);
     
     const tmpPath = path.join('uploads', `${uuidv4()}.xlsx`);
 
     try {
         await sheetService.writeXlsx(selectedColumns, filteredRows, tmpPath);
-        res.download(tmpPath, 'selected-columns.xlsx', (err) => {
+        res.download(tmpPath, 'selected-data.xlsx', (err) => {
             if (err) {
                 console.error("Error sending file:", err);
             }
